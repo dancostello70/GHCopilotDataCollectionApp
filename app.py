@@ -1,0 +1,199 @@
+from flask import Flask, render_template, request, redirect, url_for, flash, Response
+import sqlite3
+import re
+import os
+import csv
+from io import StringIO
+from datetime import datetime
+
+app = Flask(__name__)
+app.secret_key = 'your-secret-key-change-this'
+
+# Database configuration
+DATABASE = 'data_collection.db'
+
+def get_db_connection():
+    """Get database connection"""
+    conn = sqlite3.connect(DATABASE)
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def init_db():
+    """Initialize the database with the required table"""
+    conn = get_db_connection()
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS contacts (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            first_name TEXT NOT NULL,
+            last_name TEXT NOT NULL,
+            email TEXT NOT NULL,
+            phone TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+    conn.commit()
+    conn.close()
+
+def validate_email(email):
+    """Validate email address format"""
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
+def validate_phone(phone):
+    """Validate phone number format (allows various formats)"""
+    # Remove all non-digit characters for validation
+    digits_only = re.sub(r'[^\d]', '', phone)
+    # Check if it's a valid length (10-15 digits)
+    return len(digits_only) >= 10 and len(digits_only) <= 15
+
+@app.route('/')
+def index():
+    """Display the data collection form"""
+    return render_template('index.html')
+
+@app.route('/submit', methods=['POST'])
+def submit_data():
+    """Handle form submission"""
+    first_name = request.form.get('first_name', '').strip()
+    last_name = request.form.get('last_name', '').strip()
+    email = request.form.get('email', '').strip()
+    phone = request.form.get('phone', '').strip()
+    
+    # Validation
+    errors = []
+    
+    if not first_name:
+        errors.append('First name is required')
+    
+    if not last_name:
+        errors.append('Last name is required')
+    
+    if not email:
+        errors.append('Email is required')
+    elif not validate_email(email):
+        errors.append('Please enter a valid email address')
+    
+    if not phone:
+        errors.append('Phone number is required')
+    elif not validate_phone(phone):
+        errors.append('Please enter a valid phone number (10-15 digits)')
+    
+    if errors:
+        for error in errors:
+            flash(error, 'error')
+        return render_template('index.html', 
+                             first_name=first_name, 
+                             last_name=last_name, 
+                             email=email, 
+                             phone=phone)
+    
+    # Save to database
+    try:
+        conn = get_db_connection()
+        conn.execute('''
+            INSERT INTO contacts (first_name, last_name, email, phone)
+            VALUES (?, ?, ?, ?)
+        ''', (first_name, last_name, email, phone))
+        conn.commit()
+        conn.close()
+        
+        flash('Data saved successfully!', 'success')
+        return redirect(url_for('success'))
+    
+    except Exception as e:
+        flash(f'Error saving data: {str(e)}', 'error')
+        return render_template('index.html', 
+                             first_name=first_name, 
+                             last_name=last_name, 
+                             email=email, 
+                             phone=phone)
+
+@app.route('/success')
+def success():
+    """Display success page"""
+    return render_template('success.html')
+
+@app.route('/view')
+def view_data():
+    """View all collected data"""
+    conn = get_db_connection()
+    contacts = conn.execute('SELECT * FROM contacts ORDER BY created_at DESC').fetchall()
+    conn.close()
+    return render_template('view.html', contacts=contacts)
+
+@app.route('/export_csv')
+def export_csv():
+    """Export all data as CSV file"""
+    conn = get_db_connection()
+    contacts = conn.execute('SELECT * FROM contacts ORDER BY created_at DESC').fetchall()
+    conn.close()
+    
+    # Create CSV content
+    output = StringIO()
+    writer = csv.writer(output)
+    
+    # Write header
+    writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Date Added'])
+    
+    # Write data rows
+    for contact in contacts:
+        writer.writerow([
+            contact['id'],
+            contact['first_name'],
+            contact['last_name'],
+            contact['email'],
+            contact['phone'],
+            contact['created_at']
+        ])
+    
+    # Prepare response
+    csv_data = output.getvalue()
+    output.close()
+    
+    # Create filename with current date
+    from datetime import datetime
+    filename = f"contacts_export_{datetime.now().strftime('%Y%m%d_%H%M%S')}.csv"
+    
+    # Return CSV as downloadable file
+    return Response(
+        csv_data,
+        mimetype='text/csv',
+        headers={
+            'Content-Disposition': f'attachment; filename={filename}'
+        }
+    )
+
+@app.route('/delete/<int:contact_id>', methods=['POST'])
+def delete_contact(contact_id):
+    """Delete a specific contact by ID"""
+    try:
+        conn = get_db_connection()
+        
+        # Check if contact exists
+        contact = conn.execute('SELECT * FROM contacts WHERE id = ?', (contact_id,)).fetchone()
+        if not contact:
+            flash('Contact not found', 'error')
+            conn.close()
+            return redirect(url_for('view_data'))
+        
+        # Delete the contact
+        conn.execute('DELETE FROM contacts WHERE id = ?', (contact_id,))
+        conn.commit()
+        conn.close()
+        
+        flash(f'Contact "{contact["first_name"]} {contact["last_name"]}" has been deleted successfully', 'success')
+        
+    except Exception as e:
+        flash(f'Error deleting contact: {str(e)}', 'error')
+    
+    return redirect(url_for('view_data'))
+
+@app.route('/help')
+def help_page():
+    """Display help and instructions page"""
+    return render_template('help.html')
+
+if __name__ == '__main__':
+    # Initialize database on startup
+    init_db()
+    app.run(debug=True, host='0.0.0.0', port=5000)

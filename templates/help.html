@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help - Data Collection App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+        }
+        
+        h2 {
+            color: #667eea;
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        
+        h3 {
+            color: #555;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        
+        p, li {
+            color: #666;
+            line-height: 1.6;
+            margin-bottom: 10px;
+        }
+        
+        ul {
+            padding-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        .back-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+            margin-bottom: 20px;
+        }
+        
+        .back-link:hover {
+            transform: translateY(-2px);
+        }
+        
+        .feature-card {
+            background: #f8f9fa;
+            border-left: 4px solid #667eea;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+        
+        .feature-card h3 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        
+        .step-number {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 25px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #856404;
+        }
+        
+        .warning strong {
+            color: #856404;
+        }
+        
+        .tip {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #0c5460;
+        }
+        
+        .tip strong {
+            color: #0c5460;
+        }
+        
+        .nav-links {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+        
+        .nav-links a {
+            color: #667eea;
+            text-decoration: none;
+            margin: 0 15px;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 20px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            background-color: #f0f0f0;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            h2 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('index') }}" class="back-link">← Back to Home</a>
+        
+        <h1>📚 Help & Instructions</h1>
+        
+        <p>Welcome to the Data Collection App! This guide will help you understand how to use all the features of this application.</p>
+        
+        <h2>🚀 Getting Started</h2>
+        <p>This application allows you to collect, store, view, and manage contact information through a simple web interface.</p>
+        
+        <h2>📝 How to Submit Data</h2>
+        <div class="feature-card">
+            <h3>Adding New Contacts</h3>
+            <p><span class="step-number">1</span>Navigate to the homepage (main form)</p>
+            <p><span class="step-number">2</span>Fill out all required fields:</p>
+            <ul>
+                <li><strong>First Name:</strong> Enter the person's first name</li>
+                <li><strong>Last Name:</strong> Enter the person's last name</li>
+                <li><strong>Email:</strong> Enter a valid email address (e.g., john@example.com)</li>
+                <li><strong>Phone:</strong> Enter a phone number (10-15 digits, formatting flexible)</li>
+            </ul>
+            <p><span class="step-number">3</span>Click "Submit Data" to save the information</p>
+            <p><span class="step-number">4</span>You'll see a success message and be redirected to a confirmation page</p>
+        </div>
+        
+        <h2>👀 How to View Data</h2>
+        <div class="feature-card">
+            <h3>Viewing All Contacts</h3>
+            <p><span class="step-number">1</span>Click "View Collected Data" from any page</p>
+            <p><span class="step-number">2</span>Browse through all submitted contacts in a table format</p>
+            <p><span class="step-number">3</span>See details including ID, names, email, phone, and submission date</p>
+            <p><span class="step-number">4</span>View total record count in the statistics section</p>
+        </div>
+        
+        <h2>🗑️ How to Delete Records</h2>
+        <div class="feature-card">
+            <h3>Removing Contacts</h3>
+            <p><span class="step-number">1</span>Go to the "View Collected Data" page</p>
+            <p><span class="step-number">2</span>Find the contact you want to delete</p>
+            <p><span class="step-number">3</span>Click the red "🗑️ Delete" button in the Actions column</p>
+            <p><span class="step-number">4</span>Confirm the deletion in the popup dialog</p>
+            <p><span class="step-number">5</span>The contact will be permanently removed from the database</p>
+        </div>
+        
+        <div class="warning">
+            <strong>⚠️ Important:</strong> Deleted records cannot be recovered. Always double-check before confirming a deletion.
+        </div>
+        
+        <h2>📊 How to Export Data</h2>
+        <div class="feature-card">
+            <h3>Downloading CSV Files</h3>
+            <p><span class="step-number">1</span>Navigate to the "View Collected Data" page</p>
+            <p><span class="step-number">2</span>Click the green "📊 Export as CSV" button</p>
+            <p><span class="step-number">3</span>Your browser will download a CSV file with all contact data</p>
+            <p><span class="step-number">4</span>The file will be named with the current date and time</p>
+            <p><span class="step-number">5</span>Open the file in Excel, Google Sheets, or any spreadsheet application</p>
+        </div>
+        
+        <h2>✅ Data Validation</h2>
+        <div class="feature-card">
+            <h3>What Gets Validated</h3>
+            <ul>
+                <li><strong>Required Fields:</strong> All fields must be filled out</li>
+                <li><strong>Email Format:</strong> Must be a valid email address format</li>
+                <li><strong>Phone Number:</strong> Must contain 10-15 digits (formatting is flexible)</li>
+                <li><strong>Text Length:</strong> Names and other text fields are validated for appropriate length</li>
+            </ul>
+        </div>
+        
+        <h2>🔧 Troubleshooting</h2>
+        <h3>Common Issues and Solutions</h3>
+        <ul>
+            <li><strong>Email not accepted:</strong> Make sure it includes @ symbol and a valid domain</li>
+            <li><strong>Phone not accepted:</strong> Ensure it has at least 10 digits (spaces, dashes, and parentheses are okay)</li>
+            <li><strong>Form won't submit:</strong> Check that all required fields are filled out</li>
+            <li><strong>Can't delete record:</strong> Make sure you confirm the deletion in the popup dialog</li>
+            <li><strong>CSV won't download:</strong> Check your browser's download settings and popup blockers</li>
+        </ul>
+        
+        <div class="tip">
+            <strong>💡 Pro Tip:</strong> You can format phone numbers in various ways like (123) 456-7890, 123-456-7890, or 1234567890 - they're all accepted!
+        </div>
+        
+        <h2>📱 Mobile Usage</h2>
+        <p>This application is fully responsive and works great on:</p>
+        <ul>
+            <li>Desktop computers</li>
+            <li>Tablets</li>
+            <li>Mobile phones</li>
+        </ul>
+        <p>The interface automatically adjusts to your screen size for the best experience.</p>
+        
+        <h2>🔒 Privacy & Security</h2>
+        <div class="feature-card">
+            <h3>Your Data is Safe</h3>
+            <ul>
+                <li>All data is stored locally in a secure SQLite database</li>
+                <li>No data is transmitted to external servers</li>
+                <li>Access is limited to users who can reach this application</li>
+                <li>Regular backups are recommended for important data</li>
+            </ul>
+        </div>
+        
+        <div class="nav-links">
+            <a href="{{ url_for('index') }}">🏠 Add New Contact</a>
+            <a href="{{ url_for('view_data') }}">📋 View All Data</a>
+            <a href="{{ url_for('success') }}">✅ Success Page</a>
+        </div>
+    </div>
+</body>
+</html>
