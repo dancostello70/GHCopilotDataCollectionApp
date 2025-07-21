@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notes for {{ contact.first_name }} {{ contact.last_name }} - Data Collection App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2rem;
+        }
+        
+        .contact-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .contact-info h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+        
+        .contact-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        
+        .contact-detail {
+            color: #666;
+        }
+        
+        .contact-detail strong {
+            color: #333;
+        }
+        
+        .back-link {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: transform 0.2s ease;
+            margin-bottom: 20px;
+        }
+        
+        .back-link:hover {
+            transform: translateY(-2px);
+        }
+        
+        .add-note-btn {
+            background: #28a745;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            display: inline-block;
+            font-weight: 500;
+        }
+        
+        .add-note-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+        
+        .notes-section {
+            margin-top: 30px;
+        }
+        
+        .notes-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .note-card {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .note-card:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .note-meta {
+            color: #666;
+            font-size: 0.9rem;
+        }
+        
+        .note-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .note-text {
+            color: #333;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            white-space: pre-wrap;
+        }
+        
+        .edit-btn {
+            background: #007bff;
+            color: white;
+            padding: 6px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .edit-btn:hover {
+            background: #0056b3;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .delete-btn:hover {
+            background: #c82333;
+        }
+        
+        .no-notes {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        
+        .flash-error {
+            background-color: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #c33;
+            margin-bottom: 10px;
+        }
+        
+        .flash-success {
+            background-color: #efe;
+            color: #3c3;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #3c3;
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                margin: 10px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+            
+            .contact-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .note-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .notes-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{{ url_for('view_data') }}" class="back-link">← Back to Contacts</a>
+        
+        <h1>Notes for {{ contact.first_name }} {{ contact.last_name }}</h1>
+        
+        <!-- Contact Information -->
+        <div class="contact-info">
+            <h3>Contact Information</h3>
+            <div class="contact-details">
+                <div class="contact-detail">
+                    <strong>Email:</strong> {{ contact.email }}
+                </div>
+                <div class="contact-detail">
+                    <strong>Phone:</strong> {{ contact.phone }}
+                </div>
+                <div class="contact-detail">
+                    <strong>Added:</strong> {{ contact.created_at }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
+        <!-- Notes Section -->
+        <div class="notes-section">
+            <div class="notes-header">
+                <h2>Notes ({{ notes|length }})</h2>
+                <a href="{{ url_for('add_note', contact_id=contact.id) }}" class="add-note-btn">+ Add New Note</a>
+            </div>
+            
+            {% if notes %}
+                {% for note in notes %}
+                <div class="note-card">
+                    <div class="note-header">
+                        <div class="note-meta">
+                            <strong>Created:</strong> {{ note.created_at }}
+                            {% if note.updated_at != note.created_at %}
+                                <br><strong>Updated:</strong> {{ note.updated_at }}
+                            {% endif %}
+                        </div>
+                        <div class="note-actions">
+                            <a href="{{ url_for('edit_note', contact_id=contact.id, note_id=note.id) }}" class="edit-btn">✏️ Edit</a>
+                            <form method="POST" action="{{ url_for('delete_note', contact_id=contact.id, note_id=note.id) }}" 
+                                  style="display: inline;" 
+                                  onsubmit="return confirm('Are you sure you want to delete this note? This action cannot be undone.')">
+                                <button type="submit" class="delete-btn">🗑️ Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="note-text">{{ note.note_text }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-notes">
+                    <p>No notes have been added for this contact yet.</p>
+                    <p><a href="{{ url_for('add_note', contact_id=contact.id) }}" style="color: #667eea;">Add the first note</a></p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

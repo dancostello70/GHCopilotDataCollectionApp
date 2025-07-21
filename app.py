@@ -19,8 +19,10 @@ def get_db_connection():
     return conn
 
 def init_db():
-    """Initialize the database with the required table"""
+    """Initialize the database with the required tables"""
     conn = get_db_connection()
+    
+    # Create contacts table
     conn.execute('''
         CREATE TABLE IF NOT EXISTS contacts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -31,6 +33,19 @@ def init_db():
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
         )
     ''')
+    
+    # Create notes table
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS notes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            contact_id INTEGER NOT NULL,
+            note_text TEXT NOT NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (contact_id) REFERENCES contacts (id) ON DELETE CASCADE
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -192,6 +207,168 @@ def delete_contact(contact_id):
 def help_page():
     """Display help and instructions page"""
     return render_template('help.html')
+
+@app.route('/admin')
+def admin_page():
+    """Display admin page with raw database contents"""
+    conn = get_db_connection()
+    
+    # Get all contacts
+    contacts = conn.execute('SELECT * FROM contacts ORDER BY id').fetchall()
+    
+    # Get all notes
+    notes = conn.execute('''
+        SELECT n.*, c.first_name, c.last_name 
+        FROM notes n 
+        LEFT JOIN contacts c ON n.contact_id = c.id 
+        ORDER BY n.id
+    ''').fetchall()
+    
+    # Get table structure information
+    contacts_schema = conn.execute('PRAGMA table_info(contacts)').fetchall()
+    notes_schema = conn.execute('PRAGMA table_info(notes)').fetchall()
+    
+    # Get database statistics
+    contacts_count = conn.execute('SELECT COUNT(*) as count FROM contacts').fetchone()['count']
+    notes_count = conn.execute('SELECT COUNT(*) as count FROM notes').fetchone()['count']
+    
+    conn.close()
+    
+    return render_template('admin.html', 
+                         contacts=contacts, 
+                         notes=notes,
+                         contacts_schema=contacts_schema,
+                         notes_schema=notes_schema,
+                         contacts_count=contacts_count,
+                         notes_count=notes_count)
+
+@app.route('/contact/<int:contact_id>/notes')
+def view_contact_notes(contact_id):
+    """View all notes for a specific contact"""
+    conn = get_db_connection()
+    
+    # Get contact details
+    contact = conn.execute('SELECT * FROM contacts WHERE id = ?', (contact_id,)).fetchone()
+    if not contact:
+        flash('Contact not found', 'error')
+        conn.close()
+        return redirect(url_for('view_data'))
+    
+    # Get all notes for this contact
+    notes = conn.execute('''
+        SELECT * FROM notes 
+        WHERE contact_id = ? 
+        ORDER BY created_at DESC
+    ''', (contact_id,)).fetchall()
+    
+    conn.close()
+    return render_template('contact_notes.html', contact=contact, notes=notes)
+
+@app.route('/contact/<int:contact_id>/notes/add', methods=['GET', 'POST'])
+def add_note(contact_id):
+    """Add a new note to a contact"""
+    conn = get_db_connection()
+    
+    # Verify contact exists
+    contact = conn.execute('SELECT * FROM contacts WHERE id = ?', (contact_id,)).fetchone()
+    if not contact:
+        flash('Contact not found', 'error')
+        conn.close()
+        return redirect(url_for('view_data'))
+    
+    if request.method == 'POST':
+        note_text = request.form.get('note_text', '').strip()
+        
+        if not note_text:
+            flash('Note text is required', 'error')
+            conn.close()
+            return render_template('add_edit_note.html', contact=contact, note_text=note_text)
+        
+        try:
+            conn.execute('''
+                INSERT INTO notes (contact_id, note_text)
+                VALUES (?, ?)
+            ''', (contact_id, note_text))
+            conn.commit()
+            conn.close()
+            
+            flash('Note added successfully!', 'success')
+            return redirect(url_for('view_contact_notes', contact_id=contact_id))
+        
+        except Exception as e:
+            flash(f'Error adding note: {str(e)}', 'error')
+            conn.close()
+            return render_template('add_edit_note.html', contact=contact, note_text=note_text)
+    
+    conn.close()
+    return render_template('add_edit_note.html', contact=contact)
+
+@app.route('/contact/<int:contact_id>/notes/<int:note_id>/edit', methods=['GET', 'POST'])
+def edit_note(contact_id, note_id):
+    """Edit an existing note"""
+    conn = get_db_connection()
+    
+    # Verify contact and note exist
+    contact = conn.execute('SELECT * FROM contacts WHERE id = ?', (contact_id,)).fetchone()
+    note = conn.execute('SELECT * FROM notes WHERE id = ? AND contact_id = ?', (note_id, contact_id)).fetchone()
+    
+    if not contact or not note:
+        flash('Contact or note not found', 'error')
+        conn.close()
+        return redirect(url_for('view_data'))
+    
+    if request.method == 'POST':
+        note_text = request.form.get('note_text', '').strip()
+        
+        if not note_text:
+            flash('Note text is required', 'error')
+            conn.close()
+            return render_template('add_edit_note.html', contact=contact, note=note, note_text=note_text)
+        
+        try:
+            conn.execute('''
+                UPDATE notes 
+                SET note_text = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            ''', (note_text, note_id))
+            conn.commit()
+            conn.close()
+            
+            flash('Note updated successfully!', 'success')
+            return redirect(url_for('view_contact_notes', contact_id=contact_id))
+        
+        except Exception as e:
+            flash(f'Error updating note: {str(e)}', 'error')
+            conn.close()
+            return render_template('add_edit_note.html', contact=contact, note=note, note_text=note_text)
+    
+    conn.close()
+    return render_template('add_edit_note.html', contact=contact, note=note)
+
+@app.route('/contact/<int:contact_id>/notes/<int:note_id>/delete', methods=['POST'])
+def delete_note(contact_id, note_id):
+    """Delete a specific note"""
+    try:
+        conn = get_db_connection()
+        
+        # Check if note exists and belongs to the contact
+        note = conn.execute('SELECT * FROM notes WHERE id = ? AND contact_id = ?', (note_id, contact_id)).fetchone()
+        if not note:
+            flash('Note not found', 'error')
+            conn.close()
+            return redirect(url_for('view_contact_notes', contact_id=contact_id))
+        
+        # Delete the note
+        conn.execute('DELETE FROM notes WHERE id = ?', (note_id,))
+        conn.commit()
+        conn.close()
+        
+        flash('Note deleted successfully', 'success')
+        
+    except Exception as e:
+        flash(f'Error deleting note: {str(e)}', 'error')
+    
+    return redirect(url_for('view_contact_notes', contact_id=contact_id))
 
 if __name__ == '__main__':
     # Initialize database on startup

@@ -210,6 +210,20 @@
             <p><span class="step-number">5</span>The contact will be permanently removed from the database</p>
         </div>
         
+        <h2>📝 How to Manage Notes</h2>
+        <div class="feature-card">
+            <h3>Adding and Managing Notes</h3>
+            <p><span class="step-number">1</span>Go to the "View Collected Data" page</p>
+            <p><span class="step-number">2</span>Click the blue "📝 Notes" button for any contact</p>
+            <p><span class="step-number">3</span>View existing notes or click "Add New Note"</p>
+            <p><span class="step-number">4</span>Enter your note content and click "Save Note"</p>
+            <p><span class="step-number">5</span>Edit or delete notes using the buttons on each note</p>
+        </div>
+        
+        <div class="tip">
+            <strong>💡 Pro Tip:</strong> Notes are automatically timestamped when created and updated. You can track when each note was added and modified!
+        </div>
+        
         <div class="warning">
             <strong>⚠️ Important:</strong> Deleted records cannot be recovered. Always double-check before confirming a deletion.
         </div>
@@ -273,6 +287,7 @@
             <a href="{{ url_for('index') }}">🏠 Add New Contact</a>
             <a href="{{ url_for('view_data') }}">📋 View All Data</a>
             <a href="{{ url_for('success') }}">✅ Success Page</a>
+            <a href="{{ url_for('admin_page') }}">🔧 Admin Panel</a>
         </div>
     </div>
 </body>
